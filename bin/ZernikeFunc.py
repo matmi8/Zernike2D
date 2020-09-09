@@ -769,7 +769,7 @@ class Zernike2d:
 
 
 
-    def ZernikeDecomposition(self, order, PLOT = 1):
+    def ZernikeRecostruction(self, order, PLOT = 1):
         '''
         This function performes the decomposition and recostruction of the function (image) in the Zernike basis. 
         USE "ZernikeRecostruction", which is FASTER if only interested in decomposition.
