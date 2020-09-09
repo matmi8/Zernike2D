@@ -9,9 +9,8 @@ except:
     PD_LAB = 0
     #exit()
 
+
 import matplotlib.pyplot as mpl
-
-
 from scipy.spatial import distance_matrix
 
 
@@ -31,7 +30,17 @@ DEB_FIND_ORIENT = 0
 
 
 def RotateMatrix(c, s, ax):
+    '''
+    This function returns the rotation matrix around a given axis. 
 
+    It takes as imput c=cos(theta) and s=sin(theta) and the axis, ax:
+    ax=0, axis x;
+    ax=1, axis y;
+    ax=2, axis z.
+    
+    It returns a 3x3 rotation matrix (A).
+    '''
+    
     A = np.zeros((3,3))
     if(ax == 0):
         A[0,0] = 1
@@ -56,7 +65,24 @@ def RotateMatrix(c, s, ax):
 
     
 
-def RotatePatch(patch, mean_normal_v,axis_z_or,  pin):
+def RotatePatch(patch, mean_normal_v, axis_z_or, pin):
+    ''' 
+    This function rotate a set of N points (the patch) in the 3d space toward the z-axis.
+    
+    It takes as input:
+    
+    - patch, a Nx3 matrix of point coordinates;
+    - mean_normal_v, the vector that idenitfies the initial direction;
+    - axis_z_or, the orientation of the z axis, 1 (for 'up' oriented patches) or -1 (for  'down' oriented patches);
+    - pin, the origin of the rotation.
+
+    It returns:
+    - r_vn1, the rotated input vector;
+    - patch_trans, the rotated set of points.
+   
+    (TODO: re-add pin to the points..) 
+
+    '''
     
     XY = True
     YZ = True
@@ -79,16 +105,12 @@ def RotatePatch(patch, mean_normal_v,axis_z_or,  pin):
     
     while P > _ESP_:
 
-        #r_vn1 = r_vn.copy()
-
         r1 = np.array([r_vn1[0],r_vn1[1]])
         r2 = np.array([r_z[0],r_z[1]])
         r1/=np.sqrt(r1.dot(r1))
-        #r2/=np.sqrt(r2.dot(r2))
         
-        cos_theta = r1[1] / np.sqrt(r1.dot(r1)) #(r1[0]*r2[0] + r1[1]*r2[1])/r1.dot(r1)
-        sin_theta = r1[0] / np.sqrt(r1.dot(r1)) #(r1[0]*r2[1] - r1[1]*r2[0])/r1.dot(r1)
-        
+        cos_theta = r1[1] / np.sqrt(r1.dot(r1)) 
+        sin_theta = r1[0] / np.sqrt(r1.dot(r1)) 
         
         R = RotateMatrix(cos_theta, sin_theta, 2)
         if(XY):
@@ -96,19 +118,12 @@ def RotatePatch(patch, mean_normal_v,axis_z_or,  pin):
                 patch_trans[i,:] = np.dot(R, patch_trans[i,:]) 
             r_vn1 = np.dot(R, r_vn1)
         
-        #print("xy")
-        #tmp = r_vn1
-        #print("nter",tmp/np.sqrt(tmp.dot(tmp)))
-        
-       
         ## y-z plane
            
         r1 = np.array([r_vn1[1],r_vn1[2]])
         r2 = np.array([r_z[1],r_z[2]])
         r1/=np.sqrt(r1.dot(r1))
     
-        #cos_theta = r1.dot(r2)/r1.dot(r1)
-        #sin_theta = (-r1[0]*r2[1] + r1[1]*r2[0])/r1.dot(r1)
         if(axis_z_or > 0 ):
             cos_theta = r1[1] #(r1[0]*r2[0] + r1[1]*r2[1])/r1.dot(r1)
             sin_theta = r1[0] #(r1[0]*r2[1] - r1[1]*r2[0])/r1.dot(r1)
@@ -125,11 +140,125 @@ def RotatePatch(patch, mean_normal_v,axis_z_or,  pin):
       
 
         P = np.abs(1 - r_z.dot(r_vn1)/np.sqrt((r_z.dot(r_z))*(r_vn1.dot(r_vn1))))
+
     return(r_vn1, patch_trans)
         
 
+def RotatePatchGeneric(patch, start,stop,  pin):
+    ''' 
+    This function rotate a set of N points (the patch) in the 3d space.
+    
+    It takes as input:
+    
+    - patch, a Nx3 matrix of point coordinates;
+    - start, the vector that idenitfies the initial direction;
+    - stop, the vector that idenitfies the final direction;
+    - pin, the origin of the rotation.
+
+    It returns:
+    - r_vn1, the rotated input vector;
+    - patch_trans, the rotated set of points.
+   
+    (TODO: re-add pin to the points..) 
+
+    '''
+
+    XY = True
+    YZ = True
+    XZ = True
+
+    _ESP_ = 1e-10
+
+    patch_trans = patch[:,:3] - pin
+    
+    Npoints  =np.shape(patch_trans)[0]
+    
+    ### defining rotating vectors...
+    r_z = stop.copy()/np.sqrt(stop.dot(stop))
+    r_vn = start.copy()/np.sqrt(start.dot(start)) #np.mean(normal_v, axis=0) #nter_atom_pos[1,:]
+
+    
+    P = np.abs(1 - r_z.dot(r_vn)/np.sqrt((r_z.dot(r_z))*(r_vn.dot(r_vn))))
+
+    r_vn1 = r_vn.copy()
+    
+    while P > _ESP_:
+
+        r1 = np.array([r_vn1[0],r_vn1[1]])
+        r2 = np.array([r_z[0],r_z[1]])
+        if(XY and r1.dot(r1) != 0):
+          
+            r1/=np.sqrt(r1.dot(r1))
+            r2/=np.sqrt(r2.dot(r2))
+        
+            cos_theta = (r1[0]*r2[0] + r1[1]*r2[1])/r1.dot(r1)
+            sin_theta = (r1[0]*r2[1] - r1[1]*r2[0])/r1.dot(r1)
+        
+        
+            R = RotateMatrix(cos_theta, sin_theta, 2)
+            for i in range(Npoints):
+                patch_trans[i,:] = np.dot(R, patch_trans[i,:]) 
+            r_vn1 = np.dot(R, r_vn1)
+        
+        print("sincos",cos_theta, sin_theta)
+        print("xy", "v", r_vn1)
+        
+       
+        ## y-z plane
+           
+        r1 = np.array([r_vn1[1],r_vn1[2]])
+        r2 = np.array([r_z[1],r_z[2]])
+        
+        if(YZ and r1.dot(r1) != 0):
+        
+        
+            r1/=np.sqrt(r1.dot(r1))
+            r2/=np.sqrt(r2.dot(r2))
+    
+            cos_theta = (r1[0]*r2[0] + r1[1]*r2[1])/r1.dot(r1)
+            sin_theta = (r1[0]*r2[1] - r1[1]*r2[0])/r1.dot(r1)
+       
+            
+            R = RotateMatrix(cos_theta, sin_theta, 0)
+            for i in range(Npoints):
+                patch_trans[i,:] = np.dot(R, patch_trans[i,:]) 
+            r_vn1 = np.dot(R, r_vn1)
+        #print("sincos",cos_theta, sin_theta, r1.dot(r1))
+        #print("yz", "v", r_vn1)
+       
+        ## x-z plane
+           
+        r1 = np.array([r_vn1[0],r_vn1[2]])
+        r2 = np.array([r_z[0],r_z[2]])
+        
+        if(XZ and r1.dot(r1) != 0):
+        
+            r1/=np.sqrt(r1.dot(r1))
+            r2/=np.sqrt(r2.dot(r2))
+    
+            cos_theta = (r1[0]*r2[0] + r1[1]*r2[1])/r1.dot(r1)
+            sin_theta = (r1[0]*r2[1] - r1[1]*r2[0])/r1.dot(r1)
+       
+            
+            R = RotateMatrix(cos_theta, sin_theta, 1)
+            for i in range(Npoints):
+                patch_trans[i,:] = np.dot(R, patch_trans[i,:]) 
+            r_vn1 = np.dot(R, r_vn1)
+      
+        #print("sincos",cos_theta, sin_theta, r1.dot(r1))
+        #print("xz", "v", r_vn1)
+       
+        P = np.abs(1 - r_z.dot(r_vn1)/np.sqrt((r_z.dot(r_z))*(r_vn1.dot(r_vn1))))
+    return(r_vn1, patch_trans)
+
+
+
 
 def myflip(m, axis):
+    '''
+    This function flips a matrix (m) along a given direction (axis).
+    '''
+    
     if not hasattr(m, 'ndim'):
         m = asarray(m)
     indexer = [slice(None)] * m.ndim
@@ -140,9 +269,18 @@ def myflip(m, axis):
                          % (axis, m.ndim))
     return m[tuple(indexer)]
 
+
+
 def IsolateSurfaces(surface, minD = 1.):
     '''
-    This function groups points nearer than minD..
+    This function groups points nearer than minD.
+    
+    It takes as inputs:
+    - surface, the set of N points (Nx3);
+    - minD, the distance cut-off.
+
+    It returns:
+    - surf_label, a label vector, where each group has a different numeric label. 
     '''
 
     # squaring distance to avoid sqrt..
@@ -158,12 +296,6 @@ def IsolateSurfaces(surface, minD = 1.):
     # starting from label = 2
     lab = 2
 
-    #surf_label[0] = lab
-    #surf_tmp[0] = lab
-
-
-    #pos_s = np.where(surf_tmp == lab)
-
     # computing number of points without label..
     Nleft = np.sum(surf_tmp != 0)
 
@@ -178,8 +310,6 @@ def IsolateSurfaces(surface, minD = 1.):
         surf_label[pos__[0][0]] = lab
         surf_tmp[pos__[0][0]] = lab
 
-
-
         # iterating to find points belonging to the same surface...
         while(count > 0):
 
@@ -190,8 +320,6 @@ def IsolateSurfaces(surface, minD = 1.):
             mask = np.logical_and(surf_tmp > 0, surf_tmp != lab)
 
             for i in pos_s[0]:
-                #print("pos",i)
-
                 # computin distances between points and the i-esime point...
                 d = (surface[:,0] - surface[i,0])**2 + (surface[:,1] - surface[i,1])**2 + (surface[:,2] - surface[i,2])**2
 
@@ -202,8 +330,6 @@ def IsolateSurfaces(surface, minD = 1.):
 
                 # removing processed point from system..
                 surf_tmp[i] = 0
-
-                #print("00", np.sum(surf_tmp == 0),"out of", len(surf_tmp), "lab", lab)
 
                 # creating mask for  point still to be processed..
                 mmm = np.logical_and(mm,mask)
@@ -226,7 +352,8 @@ def IsolateSurfaces(surface, minD = 1.):
 
 def FindBorder(new_plane_ab):
     '''
-    This function finds the border of a figure in the plane...
+    This function finds the border of a figure in the plane.
+    TO BE TESTED...
     '''
     
     a,b = np.shape(new_plane_ab)
@@ -272,6 +399,15 @@ def ContactPoints(list_1, list_2, thresh):
     '''
     This function finds the groups of point of list1 and list2 that have a distance lesser that thresh 
     from at least one point of the other list.
+
+    Inputs:
+    - list_1, Nx3 matrix of group-1 points;
+    - list_2, Mx3 matrix of group-2 points;
+
+
+    Outputs:
+    -contact_1, N'x3 matrix of group-1 points near to group-2 points;
+    -contact_2, M'x3 matrix of group-2 points near to group-1 points;
     '''
     
     thresh2 = thresh**2
@@ -297,7 +433,6 @@ def ContactPoints(list_1, list_2, thresh):
             contact_2 = np.row_stack([contact_2, list_2[mask,:3]])
 
     try:
-        #print("ok")
         contact_2 = np.unique(contact_2,axis=0)
 
     except:
@@ -306,7 +441,7 @@ def ContactPoints(list_1, list_2, thresh):
         for x in aaa:
             if x not in output:
                 output = np.row_stack([output, x])
-        contact_2 = output.copy() #np.matrix(output)
+        contact_2 = output.copy() 
 
     L1 = np.shape(contact_2)[0]
     mmm = []
@@ -318,6 +453,7 @@ def ContactPoints(list_1, list_2, thresh):
     contact_2 = np.column_stack([contact_2, np.array(mmm)])
 
     return(contact_1[1:,:], contact_2[1:,:])
+
 
 def ContactPoints_NewVersion(list_1, list_2, thresh):
     '''
@@ -368,7 +504,7 @@ def ContactPoints_NewVersion(list_1, list_2, thresh):
         for x in aaa:
             if x not in output:
                 output = np.row_stack([output, x])
-        contact_2 = output.copy() #np.matrix(output)
+        contact_2 = output.copy() 
 
     L1 = np.shape(contact_2)[0]
     mmm = []
@@ -399,13 +535,78 @@ def FindRealBR(surface1, surface2, _threshold_):
     mask_ab = AB > 0
     return(mask_ab,mask_ag)
 
-def EigRotation(points, eigvec):
 
+
+
+def EigRotation(points, eigvec):
+    '''
+    TO BE CHECKED
+    '''
     rot = np.transpose(np.dot(np.transpose(eigvec), np.transpose(points)))
     return(rot)
 
 
+
+
+
+def BuildCone(zmax, Ndisk):
+    '''
+    TO BE CHECKED
+    '''
+
+    dz = zmax/float(Ndisk)
+    z = 0
+
+    n = 100
+    res = [0,0,0]
+    rad = np.linspace(0, 2*np.pi, n)
+    for i in range(Ndisk):
+        z += dz
+        x = z*np.cos(rad)
+        y = z*np.sin(rad)
+
+        res = np.row_stack([res, np.column_stack([x,y,np.ones(n)*z])])
+    return(res)
+
+
+
+def ConcatenateFigPlots(list_):
+    '''
+    This function concatenates a list of different point sets
+
+    Input:
+    - list_, a list of point groups, es. [group1, group2] with dim(group1)=NxD and dim(group2)=MxD,
+
+    Output:
+    - res, a matrix of dimension (N+M)xD
+    - col, a vector of labels, one for each of the initally given groups.
+    '''
+    l = len(list_)
+    res = list_[0]
+
+    n, tmp = np.shape(list_[0])
+
+
+    col_list = np.linspace(-100, 100, l)
+    col = np.ones(n)*col_list[0]
+
+    if(l>1):
+        for i in range(1,l):
+            res = np.row_stack([res, list_[i]])
+            n, tmp = np.shape(list_[i])
+            col = np.concatenate([col, np.ones(n)*col_list[i]])
+    return(res, col)
+
+
 def Plot3DPointsAndVectors(x,y,z, u,v,w, color = []):
+    '''
+    This function returns a 3D plot of a set of points and arrows.
+    
+    Inputs:
+    - x, y, z, the points coordinates as 1d vectors (origin of the arrows). 
+    - u, v, w, the points coordinates as 1d vectors (end of the arrows). 
+    - color, a vector of point colors as numbers in the interval [0,1];  
+    '''
 
     ll = len(x)
     mask = np.random.choice(np.arange(ll),100, replace = False)
@@ -427,14 +628,20 @@ def Plot3DPointsAndVectors(x,y,z, u,v,w, color = []):
 
 
 
-def Plot3DPoints(x,y,z, color,size):
-
+def Plot3DPoints(x,y,z, color,size=0.3):
+    '''
+    This function returns a 3D plot of a set of points.
+    
+    Inputs:
+    - x, y, z, the points coordinates as 1d vectors. 
+    - color, a vector of point colors as numbers in the interval [0,1];  
+    - size, a number for the size of the points. 
+    '''
+    
     if(MLAB_LAB):
         mlab.figure(1, bgcolor=(1, 1, 1), fgcolor=(0, 0, 0), size=(800, 600))
         mlab.clf()
         pp = mlab.points3d(x,y,z, scale_factor=size)
-        #mm = mlab.points3d(0,0,0, scale_factor=size*10)
-
         pp.glyph.scale_mode = 'scale_by_vector'
         pp.mlab_source.dataset.point_data.scalars = color
 
@@ -442,41 +649,6 @@ def Plot3DPoints(x,y,z, color,size):
         mlab.show()
     else:
         print("Library mahavi not present!")
-
-
-def BuildCone(zmax, Ndisk):
-
-    dz = zmax/float(Ndisk)
-    z = 0
-
-    n = 100
-    res = [0,0,0]
-    rad = np.linspace(0, 2*np.pi, n)
-    for i in range(Ndisk):
-        z += dz
-        x = z*np.cos(rad)
-        y = z*np.sin(rad)
-
-        res = np.row_stack([res, np.column_stack([x,y,np.ones(n)*z])])
-    return(res)
-
-def ConcatenateFigPlots(list_):
-
-    l = len(list_)
-    res = list_[0]
-
-    n, tmp = np.shape(list_[0])
-
-
-    col_list = np.linspace(-100, 100, l)
-    col = np.ones(n)*col_list[0]
-
-    if(l>1):
-        for i in range(1,l):
-            res = np.row_stack([res, list_[i]])
-            n, tmp = np.shape(list_[i])
-            col = np.concatenate([col, np.ones(n)*col_list[i]])
-    return(res, col)
 
 
 
@@ -580,12 +752,7 @@ class Surface:
         else:
             self.surface = surface
 
-        #Nx, Ny, Nz  = np.shape(self.surface)
-
-        #self.box_shape = np.array([Nx,Ny, Nz])
-
-
-
+            
         self.patch_num = patch_num  ## number of patches to create
         self.r0 = r0                ## radius of the sphere to build the patch
         self.theta_max = theta_max  ## maximum degree of the cone
@@ -599,8 +766,6 @@ class Surface:
             self.real_br = real_br # saving the mask     #self.surface[real_br,:]
         else:
             self.real_br = []
-
-        #self.distance_matrix = distance_matrix(self.surface, self.surface, p=2, threshold=1000000)
 
 
     def EnlargePixels(self, plane, THRES = 300):
@@ -633,7 +798,7 @@ class Surface:
         ## processing patch to remove islands..
         index_ = IsolateSurfaces(patch_points, Dmin)
 
-        val, counts = np.unique (index_,return_counts=True)
+        val, counts = np.unique(index_,return_counts=True)
         #print(val, counts)
         pos_ = np.where(counts == np.max(counts))[0][0]
         lab_ = val[pos_]
@@ -1047,6 +1212,15 @@ class Surface:
 
 
     def PatchReorientNew(self,patch_points, verso):
+        '''
+        This function rotates a set of given points in order to have the xy plane perpendicular to the mean point versor.
+        Input:
+        - point matrix, a Nx6 matrix with x,y,z (coordinates) and u,v,w (normal versors);
+        
+        Output:
+        - rot_patch, rotated patch points;
+        - rot_normal_vec, rotated patch normal versors.
+        '''
     
         ll = np.shape(patch_points)[0]
     
