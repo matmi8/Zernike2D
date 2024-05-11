@@ -1,11 +1,11 @@
 import subprocess
-import argparse
 from pathlib import Path
 import pandas as pd
 import numpy as np
+from .docs import build_cli_molecular_surface
 
 
-class GetMolecularSurface:
+class MolecularSurface:
     def __init__(self, pdb, input_path, output_path, all_atom):
         self.pdb = pdb
         self.input_path = input_path
@@ -70,35 +70,9 @@ class GetMolecularSurface:
         df.to_csv(f'{str(self.dms_output)[:-4]}.csv', index=False)
 
 
-def build_cli():
-    des = ("Given as input a `.pdb` file obtains a molecular surface using dms software")
-    parser = argparse.ArgumentParser(description=des, add_help=False)
-    req_grp = parser.add_argument_group(title="positional arguments")
-    req_grp.add_argument("-pdb", "--pdb",
-                         required=True,
-                         help="pdb file; the pdb file name (ex: 1a1u_A.pdb)",
-                         metavar="")
-    req_grp.add_argument("-i", "--input",
-                         required=True,
-                         help="input path; folder with pdb files",
-                         metavar="")
-    req_grp.add_argument("-o", "--output",
-                         required=True,
-                         help="output path; destination folder of output files",
-                         metavar="")
-    optional = parser.add_argument_group('optional arguments')
-    optional.add_argument('-a', 
-                          action='store_true', 
-                          help="boolean; use all atom in .pdb file to calculate dms surface")
-    optional.add_argument("-h", "--help",
-                          action="help",
-                          help="show this help message and exit")
-    return parser.parse_args()
-
-
 def main():
-    args = build_cli()
-    ms = GetMolecularSurface(args.pdb, args.input, args.output, args.a)
+    args = build_cli_molecular_surface()
+    ms = MolecularSurface(args.pdb, args.input, args.output, args.a)
     ms.get_dms_surface()
     ms.edit_dms_file()
     ms.get_surface_csv()
