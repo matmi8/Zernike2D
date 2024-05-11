@@ -41,9 +41,11 @@ Your work directory should look like the following
 │   ├── 1a1u_C.dms
 │   └── 1a1u_C.pdb
 ├── output_files
+│   └── 1a1u_A_bp.csv
 │   ├── 1a1u_A_up_coeff.csv
 │   ├── 1a1u_A_up_coeff.png
 │   ├── 1a1u_A_up_disk.png
+│   ├── 1a1u_C_bp.csv 
 │   ├── 1a1u_C_down_coeff.csv
 │   ├── 1a1u_C_down_coeff.png
 │   └── 1a1u_C_down_disk.png
@@ -119,17 +121,27 @@ The `bp` column indicates the binding propensity for each point on the surface, 
 
 Again from the usual directory, you can run:
 ```bash
-python get_binding_propensity.py -sf1 ./input_files/1a1u_A.csv -sf2 ./input_files/1a1u_C.csv -o ./output_files/
+python get_binding_propensity.py -sf1 ./input_files/1a1u_A.csv -sf2 ./input_files/1a1u_C.csv -o ./tutorial/
 ```
 
-**NOTE**: the execution will take several hours.
+**NOTE**: the execution will take several hours. If you don't want to wait, you can use the files `1a1u_A_bp.csv` and `1a1u_C_bp.csv` in the output_files folder
 
 When finished you will find the files `1a1u_A_bp.csv` and `1a1u_C_bp.csv` in the `tutorial/` folder.
 
 
 ### Smooth Binding Propensity
+The last part of the analysis is to smooth the binding propensity and calculate the AUC and ROC curves, comparing the real and the predicted _binding site propensity_ groups.
 
+To do this we use the `R` script `binding_propensity_analysis.R` so that we can take advantage of the `ROCR` package. The script takes as input the paths to the two files produced at the previous step
 
+```bash
+Rscript binding_propensity_analysis.R ./tutorial/1a1u_A_bp.csv ./tutorial/1a1u_C_bp.csv
+```
+AUC values for the two proteins will be printed on the screen:
+```bash
+[1] "The AUC of the first protein is: 0.73"
+[1] "The AUC of the second protein is: 0.69"
+```
 
 ## Cite
 If you use `Zenike2D` in a scientific publication, please cite:
