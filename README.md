@@ -28,7 +28,9 @@ pip install -r requirements.txt
 Your work directory should look like the following
 ```bash
 .
+├── get_binding_propensity.py
 ├── get_molecular_surface.py
+├── get_zernike2d_invariants.py
 ├── figures
 │   └── 1a1u.png
 ├── input_files
@@ -79,7 +81,7 @@ Now you should have files `1a1u_A.dms`, `1a1u_A.csv` and `1a1u_C.dms`, `1a1u_C.c
 ## Zernike 2D descriptors
 If you followed the previous step you have files `1a1u_A.dms`, `1a1u_A.csv` and `1a1u_C.dms`, `1a1u_C.csv` in the `tutorial` folder. The same files are in the `input_path` folder.
 
-The script `compute_zernike2d_from_patch.py` computes Zernike invariants. In particular it takes as input:
+The script `get_zernike2d_invariants.py` computes Zernike invariants on a 6Å patch centered at the point with index 0 in the `.csv` file. In particular it takes as input:
 - the name of the `.csv` file (e.g., `1a1u_A.csv`)
 - the input path of the `.csv` file
 - the output path
@@ -91,8 +93,8 @@ Three files will be saved in the output path:
 
 You can run this script from the root directory
 ```bash
-python compute_zernike2d_from_patch.py -sf 1a1u_A.csv -i ./input_files/ -o ./tutorial/ -v 1
-python compute_zernike2d_from_patch.py -sf 1a1u_C.csv -i ./input_files/ -o ./tutorial/ -v -1
+python get_zernike2d_invariants.py -sf 1a1u_A.csv -i ./input_files/ -o ./tutorial/ -v 1
+python get_zernike2d_invariants.py -sf 1a1u_C.csv -i ./input_files/ -o ./tutorial/ -v -1
 ```
 
 In the `tutorial/` folder you will find the produced files which are the same files in the `output_files/` folder.
@@ -104,6 +106,30 @@ In the `tutorial/` folder you will find the produced files which are the same fi
 
 
 ## Binding Propensity
+To calculate binding propensity we need the Zernike descriptors for each point on the surface. 
+
+The script `get_binding_propensity.py` calculates these descriptors for the two surfaces `1a1u_A.csv` and `1a1u_B.csv` and then calculates the binding propensity. It takes as input:
+- the surface1 `<path>/<file1>.csv`
+- the surface2 `<path>/<file2>.csv`
+- the output path
+
+Two `.csv` will be saved in the output file with 5 columns (`x, y, z, color, bp`) and number of rows equal to the number of points on the respective surface.
+
+The `bp` column indicates the binding propensity for each point on the surface, defined as the minimal distance between Zernike descriptors associated to a point of surface _A_ and all points belonging to the surface _C_ and viceversa.
+
+Again from the usual directory, you can run:
+```bash
+python get_binding_propensity.py -sf1 ./input_files/1a1u_A.csv -sf2 ./input_files/1a1u_C.csv -o ./output_files/
+```
+
+**NOTE**: the execution will take several hours.
+
+When finished you will find the files `1a1u_A_bp.csv` and `1a1u_C_bp.csv` in the `tutorial/` folder.
+
+
+### Smooth Binding Propensity
+
+
 
 ## Cite
 If you use `Zenike2D` in a scientific publication, please cite:
