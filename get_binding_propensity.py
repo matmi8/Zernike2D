@@ -73,8 +73,8 @@ class BindingPropensity:
         file_name1 = Path(self.surface1).stem
         file_name2 = Path(self.surface2).stem
 
-        df_bp1.to_csv(Path(self.output_path).joinpath(f'{file_name1}.csv'))
-        df_bp2.to_csv(Path(self.output_path).joinpath(f'{file_name2}.csv'))
+        df_bp1.to_csv(Path(self.output_path).joinpath(f'{file_name1}_bp.csv'))
+        df_bp2.to_csv(Path(self.output_path).joinpath(f'{file_name2}_bp.csv'))
 
 
 def main():
