@@ -16,20 +16,39 @@ class BindingPropensity:
 
     @staticmethod
     def get_all_invariants(surface, verso):
+        """
+        Compute Zernike invariants for each point of a surface
+        Parameters
+        ----------
+        - `surface`: full path of the surface .csv file
+        - `verso`: +1 or -1
+        """
         surf = pd.read_csv(surface)
         nrow = len(surf.index)
         coeff_array = np.zeros((nrow, 121))
 
-        for i in tqdm.tqdm(range(nrow)):
+        for i in tqdm.tqdm(range(0, nrow, 200)):
             coeff, _, _, _ = zp.get_zernike(
                 surf[['x', 'y', 'z', 'nx', 'ny', 'nz']], 6.0, i, 20, int(verso)
             )
             coeff_array[i, :] = coeff
 
-        return surf, coeff_array
+        return surf.iloc[range(0, nrow, 200)], coeff_array
     
     @staticmethod
     def get_bp_mask(df, point):
+        """
+        Filter patch points indexes from full surface .csv file
+        
+        Paramters
+        ---------
+        - `df`: full surface .csv file
+        - `point`: patch points
+
+        Return
+        ------
+        - `mask`: indexes of the patch point in full surface .csv file
+        """
         mask = np.where((
             df['x'].isin(point[0]) & 
             df['y'].isin(point[1]) & 
@@ -38,7 +57,15 @@ class BindingPropensity:
 
     
     def get_binding_propensity(self):
+        """
+        Compute binding propensity
+        """
+        file_name1 = Path(self.surface1).stem
+        file_name2 = Path(self.surface2).stem
+
+        print(f'compute Zernike invariants for {file_name1}')
         df_surf1, mat_coeff1 = self.get_all_invariants(self.surface1, verso=1)
+        print(f'compute Zernike invariants for {file_name2}')
         df_surf2, mat_coeff2 = self.get_all_invariants(self.surface2, verso=-1)
 
         patch1, patch2 = zp.contact_points(
@@ -69,9 +96,6 @@ class BindingPropensity:
             'color': color_2,
             'bp': bp2
         })
-
-        file_name1 = Path(self.surface1).stem
-        file_name2 = Path(self.surface2).stem
 
         df_bp1.to_csv(Path(self.output_path).joinpath(f'{file_name1}_bp.csv'))
         df_bp2.to_csv(Path(self.output_path).joinpath(f'{file_name2}_bp.csv'))

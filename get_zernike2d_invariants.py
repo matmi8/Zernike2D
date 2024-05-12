@@ -15,6 +15,9 @@ class ZernikeInvariants:
         self.verso = verso
 
     def get_invariants(self):
+        """
+        Compute Zernike invariants and plot results
+        """
         if int(self.verso) == 1:
             verso = 'up'
         elif int(self.verso) == -1:
