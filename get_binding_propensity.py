@@ -27,7 +27,7 @@ class BindingPropensity:
         """
         surf = surface
         nrow = len(surf.index)
-        coeff_array = np.zeros((range(0, nrow, 10), 121))
+        coeff_array = np.zeros((len(range(0, nrow, 10)), 121))
 
         # for i in tqdm.tqdm(range(0, nrow, 200)):
         for i in tqdm.tqdm(range(0, nrow, 10)):
