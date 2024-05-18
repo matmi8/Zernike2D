@@ -15,4 +15,4 @@ seaborn==0.12.2
 six==1.16.0
 tqdm==4.66.4
 tzdata==2024.1
-zepyros @ git+https://github.com/matmi8/zepyros.git@8981dd49bef82f69563ac7a7fb1a9f03967d577b
+zepyros @ git+https://github.com/matmi8/zepyros.git@4e16e76941e35c402868286340475151e75a92dc
