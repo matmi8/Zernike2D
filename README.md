@@ -108,14 +108,14 @@ In the `tutorial/` folder you will find the produced files which are the same fi
 
 
 ## Binding Propensity
-To calculate binding propensity we need the Zernike descriptors for each point on the surface. 
+To calculate binding propensity we need the Zernike descriptors for each point on the surface. Since the calculation is very time-consuming, we can sample the surface by taking every tenth point.
 
 The script `get_binding_propensity.py` calculates these descriptors for the two surfaces `1a1u_A.csv` and `1a1u_B.csv` and then calculates the binding propensity. It takes as input:
 - the surface1 `<path>/<file1>.csv`
 - the surface2 `<path>/<file2>.csv`
 - the output path
 
-Two `.csv` will be saved in the output file with 5 columns (`x, y, z, color, bp`) and number of rows equal to the number of points on the respective surface.
+Two `.csv` will be saved in the output file with 5 columns (`x, y, z, color, bp`) and number of rows equal to the number of points sampled on the respective surface.
 
 The `bp` column indicates the binding propensity for each point on the surface, defined as the minimal distance between Zernike descriptors associated to a point of surface _A_ and all points belonging to the surface _C_ and viceversa.
 
