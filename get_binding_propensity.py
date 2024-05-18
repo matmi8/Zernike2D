@@ -1,6 +1,7 @@
 import zepyros as zp
 import pandas as pd
 import numpy as np
+from scipy.spatial.distance import cdist
 from pathlib import Path
 import tqdm
 from docs import build_cli_binding_propensity
@@ -27,16 +28,16 @@ class BindingPropensity:
         """
         surf = surface
         nrow = len(surf.index)
-        coeff_array = np.zeros((len(range(0, nrow, 10)), 121))
+        sampled = range(0, nrow, 10)
+        coeff_array = np.zeros((len(sampled), 121))
 
-        # for i in tqdm.tqdm(range(0, nrow, 200)):
-        for i in tqdm.tqdm(range(0, nrow, 10)):
+        for i, ndx in enumerate(tqdm.tqdm(sampled)):
             coeff, _, _, _ = zp.get_zernike(
-                surf[['x', 'y', 'z', 'nx', 'ny', 'nz']], 6.0, i, 20, int(verso)
+                surf[['x', 'y', 'z', 'nx', 'ny', 'nz']], 6.0, ndx, 20, int(verso)
             )
             coeff_array[i, :] = coeff
 
-        return surf.iloc[range(0, nrow, 10)], coeff_array
+        return surf.iloc[sampled], coeff_array
     
     @staticmethod
     def get_bp_mask(df, points):
@@ -74,7 +75,7 @@ class BindingPropensity:
             3
         )
 
-        dist = np.sqrt(((mat_coeff1 - mat_coeff2[:, None])**2).sum(2))
+        dist = cdist(mat_coeff1, mat_coeff2)
         
         color_1 = np.min(dist, axis=0)
         color_2 = np.min(dist, axis=1)
