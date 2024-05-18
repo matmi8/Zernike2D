@@ -77,8 +77,8 @@ class BindingPropensity:
 
         dist = cdist(mat_coeff1, mat_coeff2)
         
-        color_1 = np.min(dist, axis=0)
-        color_2 = np.min(dist, axis=1)
+        color_1 = np.min(dist, axis=1)
+        color_2 = np.min(dist, axis=0)
         bp1 = self.get_bp_mask(df_surf1, patch1)
         bp2 = self.get_bp_mask(df_surf2, patch2)
 
