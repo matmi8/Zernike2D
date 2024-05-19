@@ -28,6 +28,8 @@ pip install -r requirements.txt
 Your work directory should look like the following
 ```bash
 .
+├── binding_propensity_analysis.R
+├── docs.py
 ├── get_binding_propensity.py
 ├── get_molecular_surface.py
 ├── get_zernike2d_invariants.py
