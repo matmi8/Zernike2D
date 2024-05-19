@@ -1,0 +1,8 @@
+tutorial/
+venv/
+.vscode/
+__pycache__/
+old_data/
+input_files/1a1u.pdb
+input_files/get_chains.R
+uninstall.txt
