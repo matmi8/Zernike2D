@@ -139,7 +139,7 @@ Rscript binding_propensity_analysis.R ./tutorial/1a1u_A_bp.csv ./tutorial/1a1u_C
 ```
 AUC values for the two proteins will be printed on the screen:
 ```bash
-[1] "The AUC of the first protein is: 0.73"
+[1] "The AUC of the first protein is: 0.69"
 [1] "The AUC of the second protein is: 0.69"
 ```
 
