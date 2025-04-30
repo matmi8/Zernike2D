@@ -79,23 +79,23 @@ class BindingPropensity:
         
         color_1 = np.min(dist, axis=1)
         color_2 = np.min(dist, axis=0)
-        bp1 = self.get_bp_mask(df_surf1, patch1)
-        bp2 = self.get_bp_mask(df_surf2, patch2)
+        mask1 = self.get_bp_mask(df_surf1, patch1)
+        mask2 = self.get_bp_mask(df_surf2, patch2)
 
         df_bp1 = pd.DataFrame({
             'x': df_surf1['x'].to_numpy(),
             'y': df_surf1['y'].to_numpy(),
             'z': df_surf1['z'].to_numpy(),
-            'color': color_1,
-            'bp': bp1
+            'bp': color_1,
+            'bs': bp1
         })
 
         df_bp2 = pd.DataFrame({
             'x': df_surf2['x'].to_numpy(),
             'y': df_surf2['y'].to_numpy(),
             'z': df_surf2['z'].to_numpy(),
-            'color': color_2,
-            'bp': bp2
+            'bp': color_2,
+            'bs': bp2
         })
 
         df_bp1.to_csv(Path(self.output_path).joinpath(f'{self.file_name1}_bp.csv'), index=False)
