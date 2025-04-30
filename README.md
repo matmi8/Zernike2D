@@ -117,9 +117,11 @@ The script `get_binding_propensity.py` calculates these descriptors for the two 
 - the surface2 `<path>/<file2>.csv`
 - the output path
 
-Two `.csv` will be saved in the output file with 5 columns (`x, y, z, color, bp`) and number of rows equal to the number of points sampled on the respective surface.
+Two `.csv` will be saved in the output file with 5 columns (`x, y, z, bp, bs`) and number of rows equal to the number of points sampled on the respective surface.
 
-The `bp` column indicates the binding propensity for each point on the surface, defined as the minimal distance between Zernike descriptors associated to a point of surface _A_ and all points belonging to the surface _C_ and viceversa.
+- `x, y, z` are the coordinates of a surface point; 
+- the `bp` column indicates the binding propensity for each point on the surface, defined as the minimal distance between Zernike descriptors associated to a point of surface _A_ and all points belonging to the surface _C_ and viceversa;
+- the `bs` column indicates whether or not a point belongs to the binding site. The binding site is defined by taking the molecular surface points of the two structures that are less than 3Å apart.
 
 Again from the usual directory, you can run:
 ```bash
